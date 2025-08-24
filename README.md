@@ -1,5 +1,7 @@
 # Microbanking and Interest Management System (MIMS)
 
+To get started with the project, read `TUTORIAL.md`
+
 A full-stack web application built for B-Trust Microfinance Bank to digitize core banking operations, including customer management, savings accounts, fixed deposits, and automated interest calculations.
 
 ## 🚀 Tech Stack
