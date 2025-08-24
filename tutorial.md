@@ -1,7 +1,3 @@
-Of course. Here is a comprehensive `TUTORIAL.md` for your team. It's designed to be followed step-by-step, from an empty folder to a deployed application.
-
----
-
 # MIMS - Full-Stack Development Tutorial
 
 ## Table of Contents
