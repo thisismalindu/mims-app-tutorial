@@ -32,55 +32,65 @@ Before you start, every team member must install these on their computer:
 
 ## 2. Project Structure & Git
 
-### Initialize the Project and Git
+We will use two separate GitHub repositories:
+- Backend: `https://github.com/thisismalindu/mims-app-backend`
+- Frontend: `https://github.com/thisismalindu/mims-app-frontend`
+
+### Setup for Team Members
+
+Each team member should clone both repositories:
+
 ```bash
-# Navigate to your project folder
-cd path/to/mims-app
+# Clone the backend repository
+git clone https://github.com/thisismalindu/mims-app-backend.git
+cd mims-app-backend
 
-# Initialize a main Git repository (this is optional but good for organizing)
-git init
+# Install backend dependencies
+npm install
 
-# Navigate into the backend folder and initialize it as a Node.js project
-cd backend
-npm init -y
-
-# Navigate into the frontend folder and create a React app using Vite
-cd ../frontend
-npm create vite@latest . -- --template react
-# Follow the prompts. Select 'React' and 'JavaScript'.
+# Clone the frontend repository (in a different directory)
+cd ..
+git clone https://github.com/thisismalindu/mims-app-frontend.git
+cd mims-app-frontend
 
 # Install frontend dependencies
 npm install
 ```
 
 ### Project Structure
-Your folder should now look like this:
+
+You will now have two separate folders:
 ```
-mims-app/
-├── .git/                  # Main Git repository
-├── backend/               # Node.js/Express API
-│   ├── node_modules/
-│   ├── package.json       # Backend dependencies and scripts
-│   └── ... (other files will be created)
-└── frontend/              # React Application
-    ├── node_modules/
-    ├── public/
-    ├── src/
-    ├── index.html
-    ├── package.json       # Frontend dependencies and scripts
-    └── vite.config.js
+mims-app-backend/               # Node.js/Express API
+├── node_modules/
+├── prisma/
+├── src/
+├── .env
+├── .gitignore
+├── package.json
+└── ... (other backend files)
+
+mims-app-frontend/              # React Application
+├── node_modules/
+├── public/
+├── src/
+├── index.html
+├── .gitignore
+├── package.json
+└── vite.config.js
 ```
 
-### Basic Git Setup
-Create a `.gitignore` file in the root `mims-app/` folder with this content:
+### Git Setup
+
+Each repository has its own `.gitignore` file with appropriate rules.
+
+**Backend `.gitignore`:**
 ```
 # Dependencies
-backend/node_modules/
-frontend/node_modules/
+node_modules/
 
 # Environment variables
-backend/.env
-frontend/.env
+.env
 
 # Database
 *.db
@@ -98,20 +108,34 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 ```
-**First Commit:**
-```bash
-# Add all files to staging
-git add .
 
-# Make the first commit
-git commit -m "Initial project structure with backend and frontend folders"
+**Frontend `.gitignore`:**
+```
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build output
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 ```
 
 ---
 
 ## 3. Backend: Building the API
 
-**All commands are run from the `/backend` directory.**
+**All commands are run from the `mims-app-backend` directory.**
 
 ### Step 1: Install Dependencies
 ```bash
@@ -176,7 +200,7 @@ npm install cors dotenv
       @@map("customers")
     }
     ```
-3.  **Create a `.env` file** in the `/backend` folder:
+3.  **Create a `.env` file** in the root backend directory:
     ```bash
     # For Local PostgreSQL (if you installed it)
     DATABASE_URL="postgresql://postgres:your_password@localhost:5432/mimsdb?schema=public"
@@ -198,9 +222,9 @@ npx prisma generate
 ```
 
 ### Step 4: Build the Express Server
-1.  Create the main server file: `backend/src/index.js`
+1.  Create the main server file: `src/index.js`
     ```javascript
-    // backend/src/index.js
+    // src/index.js
     const express = require('express');
     const cors = require('cors');
     require('dotenv').config();
@@ -235,10 +259,10 @@ npx prisma generate
 3.  **Test the server:** Run `npm run dev`. Open your browser and go to `http://localhost:3001/api/health`. You should see the JSON message.
 
 ### Step 5: Create Your First API Route
-1.  Create a folder: `backend/src/routes`
-2.  Create a file: `backend/src/routes/customerRoutes.js`
+1.  Create a folder: `src/routes`
+2.  Create a file: `src/routes/customerRoutes.js`
     ```javascript
-    // backend/src/routes/customerRoutes.js
+    // src/routes/customerRoutes.js
     const express = require('express');
     const { PrismaClient } = require('@prisma/client');
 
@@ -297,7 +321,7 @@ npx prisma generate
 
 ## 4. Frontend: Building the UI
 
-**All commands are run from the `/frontend` directory.**
+**All commands are run from the `mims-app-frontend` directory.**
 
 ### Step 1: Install Additional Dependencies
 ```bash
@@ -439,26 +463,26 @@ This is already done in the previous step! The key is the `baseURL` in `src/serv
 ## 6. Deployment (Hosting)
 
 ### Part A: Deploy Database & Backend to Railway
-1.  Create accounts on [GitHub](https://github.com/), [Railway](https://railway.app/), and [Vercel](https://vercel.com/).
-2.  Push your code to GitHub. Create two separate repositories: one for `backend` and one for `frontend`.
-3.  **On Railway:**
+1.  Make sure your backend code is pushed to `https://github.com/thisismalindu/mims-app-backend`.
+2.  **On Railway:**
     *   Create a new Project.
     *   Click "New" and choose "PostgreSQL". This creates your database. Go to the "Variables" tab and copy the `DATABASE_URL`.
-    *   Now, connect your `backend` GitHub repo to Railway.
+    *   Now, connect your `mims-app-backend` GitHub repo to Railway.
     *   In the Railway project settings, add a variable: `JWT_SECRET` with a long random string.
+    *   Also add the `DATABASE_URL` variable with the connection string from the PostgreSQL service you just created.
     *   Railway will automatically detect it's a Node.js app and run `npm install` and `npm start`. Your backend is now live! Railway will give you a URL like `https://mims-backend.up.railway.app`.
 
 ### Part B: Deploy Frontend to Vercel
-1.  **On Vercel:** Click "Add New..." -> "Project".
-2.  Import your `frontend` GitHub repository.
-3.  In the "Build and Output Settings":
+1.  Make sure your frontend code is pushed to `https://github.com/thisismalindu/mims-app-frontend`.
+2.  **On Vercel:** Click "Add New..." -> "Project".
+3.  Import your `mims-app-frontend` GitHub repository.
+4.  In the "Build and Output Settings":
     *   **Framework Preset:** Vite
-    *   **Root Directory:** `frontend` (if your repo is just the frontend code)
-4.  **Crucial Step:** Add an **Environment Variable** for the build process.
+5.  **Crucial Step:** Add an **Environment Variable** for the build process.
     *   **Name:** `VITE_API_BASE_URL`
     *   **Value:** The URL of your live backend on Railway (e.g., `https://mims-backend.up.railway.app/api`)
-5.  Click "Deploy". Your frontend is now live!
-6.  **Update your frontend code:** In `src/services/api.js`, change the `baseURL` to use the environment variable:
+6.  Click "Deploy". Your frontend is now live!
+7.  **Update your frontend code:** In `src/services/api.js`, change the `baseURL` to use the environment variable:
     ```javascript
     const API = axios.create({
       baseURL: import.meta.env.VITE_API_BASE_URL, // This will now use the variable from Vercel
@@ -470,21 +494,57 @@ This is already done in the previous step! The key is the `baseURL` in `src/serv
 
 ## 7. Development Workflow
 
-1.  **Start Working:** Always pull the latest changes from the team: `git pull origin main`
-2.  **Create a Feature Branch:** `git checkout -b feature/add-new-report`
-3.  **Do Your Work:** Write code for your specific task (e.g., adding a report page).
-4.  **Test Locally:** Make sure your backend (`npm run dev`) and frontend (`npm run dev`) are running and working together.
-5.  **Commit Your Changes:**
-    ```bash
-    git add .
-    git commit -m "feat: add monthly interest report page and API endpoint"
-    ```
-6.  **Push and Create a Pull Request:**
-    ```bash
-    git push origin feature/add-new-report
-    ```
-    Then go to GitHub, and you'll see a prompt to create a Pull Request (PR) to merge your branch into `main`.
-7.  **Review & Merge:** Another team member reviews your code. Once approved, the PR is merged. This triggers automatic deployment on Railway and Vercel.
+Since we have two separate repositories, you'll need to work on them independently.
+
+### Working on the Backend:
+```bash
+# Navigate to the backend directory
+cd mims-app-backend
+
+# Pull the latest changes
+git pull origin main
+
+# Create a feature branch
+git checkout -b feature/add-new-endpoint
+
+# Make your changes and test locally
+npm run dev
+
+# Commit and push your changes
+git add .
+git commit -m "feat: add new API endpoint for reports"
+git push origin feature/add-new-endpoint
+```
+
+### Working on the Frontend:
+```bash
+# Navigate to the frontend directory
+cd mims-app-frontend
+
+# Pull the latest changes
+git pull origin main
+
+# Create a feature branch
+git checkout -b feature/add-report-page
+
+# Make your changes and test locally
+npm run dev
+
+# Commit and push your changes
+git add .
+git commit -m "feat: add report page UI"
+git push origin feature/add-report-page
+```
+
+### Creating Pull Requests:
+1.  Go to your GitHub repository.
+2.  Navigate to the "Pull requests" tab.
+3.  Click "New pull request".
+4.  Select your feature branch to merge into main.
+5.  Add a description and assign a reviewer.
+6.  Once approved, merge the pull request.
+
+This will trigger automatic deployment on Railway (for backend) and Vercel (for frontend).
 
 ---
 
@@ -508,4 +568,16 @@ This is already done in the previous step! The key is the `baseURL` in `src/serv
 *   A syntax error in your code.
 
 **Q: Why are we using two separate GitHub repos?**
-**A:** It simplifies deployment. Vercel is designed to deploy a single React app, and Railway is designed to deploy a single Node.js app. Managing them separately is much easier for this project structure.
+**A:** It simplifies deployment. Vercel is designed to deploy a single React app, and Railway is designed to deploy a single Node.js app. Managing them separately is much easier for this project structure. It also allows for independent version control and deployment of frontend and backend components.
+
+**Q: How do I handle environment variables in development vs production?**
+**A:** 
+- For backend: Use a `.env` file for local development. Railway will use the environment variables you set in its dashboard for production.
+- For frontend: Use `import.meta.env.VITE_API_BASE_URL` in your code. For local development, create a `.env` file with `VITE_API_BASE_URL=http://localhost:3001/api`. For production, set the variable in Vercel's dashboard.
+
+**Q: How do I collaborate with team members on both repositories?**
+**A:** 
+1. Ensure all team members have access to both GitHub repositories.
+2. Follow the branching strategy outlined in section 7.
+3. Communicate clearly about which API endpoints are available when making frontend changes.
+4. Regularly pull changes from both repositories to stay up-to-date.
