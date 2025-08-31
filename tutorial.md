@@ -1,583 +1,796 @@
-# MIMS - Full-Stack Development Tutorial
+# MIMS - Microbanking & Interest Management System
+## The Ultimate Next.js Full-Stack Guide
+
+**Audience:** This guide is written for absolute beginners. If you have never built a web application before, you are in the right place. We will walk through every concept and step together.
 
 ## Table of Contents
-1.  [Prerequisites & Setup](#1-prerequisites--setup)
-2.  [Project Structure & Git](#2-project-structure--git)
-3.  [Backend: Building the API](#3-backend-building-the-api)
-4.  [Frontend: Building the UI](#4-frontend-building-the-ui)
-5.  [Connecting Frontend to Backend](#5-connecting-frontend-to-backend)
-6.  [Deployment (Hosting)](#6-deployment-hosting)
-7.  [Development Workflow](#7-development-workflow)
-8.  [FAQ & Troubleshooting](#8-faq--troubleshooting)
+1.  [What Are We Building?](#1-what-are-we-building)
+2.  [Understanding the Architecture](#2-understanding-the-architecture)
+3.  [Prerequisites & Setup](#3-prerequisites--setup)
+4.  [Project Setup & First Run](#4-project-setup--first-run)
+5.  [Database Design & Setup](#5-database-design--setup)
+6.  [Building the Backend (API Routes)](#6-building-the-backend-api-routes)
+7.  [Building the Frontend (Pages & Components)](#7-building-the-frontend-pages--components)
+8.  [Connecting the Frontend to the Backend](#8-connecting-the-frontend-to-the-backend)
+9.  [Authentication & Security](#9-authentication--security)
+10. [Deployment to Vercel](#10-deployment-to-vercel)
+11. [Development Workflow](#11-development-workflow)
+12. [FAQ & Troubleshooting](#12-faq--troubleshooting)
 
 ---
 
-## 1. Prerequisites & Setup
+## 1. What Are We Building?
 
-Before you start, every team member must install these on their computer:
+We are building a web application for B-Trust Microfinance Bank. The system must allow:
+- Managing branches, agents, and customers.
+- Customers to open savings accounts under different plans (Children, Teen, etc.).
+- Recording deposits and withdrawals.
+- Managing Fixed Deposits (FDs) and calculating their interest.
+- Generating various reports (transactions, balances, FDs, etc.).
 
-1.  **Node.js (v18 or higher):** Download and run the installer from [nodejs.org](https://nodejs.org/). This also installs `npm`.
-    *   *Verify:* Open a terminal/command prompt and run `node --version` and `npm --version`.
+This is a **Full-Stack Application**, meaning it has:
+- A **Frontend** (what users see and interact with in the browser).
+- A **Backend** (the server that does the logic, calculations, and talks to the database).
+- A **Database** (where all the data is stored permanently).
 
-2.  **Git:** Download and install from [git-scm.com](https://git-scm.com/).
-    *   *Verify:* Run `git --version`.
+## 2. Understanding the Architecture
 
-3.  **A Code Editor:** We recommend **Visual Studio Code** ([code.visualstudio.com](https://code.visualstudio.com/)).
+We are using **Next.js**, which is a **Full-Stack React Framework**. This is a key point:
 
-4.  **PostgreSQL (Optional for Local Dev):** It's best to have a local database.
-    *   **Windows/macOS:** Download and install from [postgresql.org](https://www.postgresql.org/download/). Remember the password you set for the `postgres` user.
-    *   **Easier Alternative (Recommended):** Use a hosted database from the start (Railway) as described in the Deployment section. You can skip local PostgreSQL setup if it's complex.
+- **Traditional Way:** You might build a separate frontend (e.g., with React) and a separate backend (e.g., with Express.js). They communicate over the internet via API calls. This is more complex to set up.
+- **Next.js Way:** Next.js lets us build both the frontend and backend **in a single project**. This is simpler and more powerful for our needs.
 
----
+**Our Tech Stack:**
+- **Next.js:** The main framework (handles both frontend and backend).
+- **React:** The library for building user interfaces (part of Next.js).
+- **PostgreSQL:** Our database (we'll use a free cloud-hosted one).
+- **Tailwind CSS:** A CSS framework for styling our app quickly.
+- **Vercel:** The platform where we will host our app for free.
 
-## 2. Project Structure & Git
+## 3. Prerequisites & Setup
 
-We will use two separate GitHub repositories:
-- Backend: `https://github.com/thisismalindu/mims-app-backend`
-- Frontend: `https://github.com/thisismalindu/mims-app-frontend`
+Every team member must install these:
 
-### Setup for Team Members
+1.  **Node.js (v18 or higher):**
+    - **What it is:** The runtime that allows us to run JavaScript on our computers (for the backend) and to build our project.
+    - **How to install:** Download the "LTS" installer from [nodejs.org](https://nodejs.org/).
+    - **Verify:** Open your terminal (Command Prompt on Windows, Terminal on Mac) and run:
+      ```bash
+      node --version
+      npm --version
+      ```
+      You should see version numbers, not an error.
 
-Each team member should clone both repositories:
+2.  **Git:**
+    - **What it is:** Version control software. It helps us track changes to our code and collaborate as a team.
+    - **How to install:** Download from [git-scm.com](https://git-scm.com/).
+    - **Verify:** Run `git --version` in your terminal.
 
-```bash
-# Clone the backend repository
-git clone https://github.com/thisismalindu/mims-app-backend.git
-cd mims-app-backend
+3.  **A Code Editor: Visual Studio Code (VSCode)**
+    - **Why:** It has excellent support for JavaScript and Next.js.
+    - **Download:** [code.visualstudio.com](https://code.visualstudio.com/).
+    - **Recommended VSCode Extensions:** After installing, install these extensions within VSCode:
+        - `ES7+ React/Redux/React-Native snippets`
+        - `Tailwind CSS IntelliSense`
+        - `PostgreSQL` (for database management)
 
-# Install backend dependencies
-npm install
+4.  **A GitHub Account:** Create a free account on [github.com](https://github.com/). We will use this to store our code.
 
-# Clone the frontend repository (in a different directory)
-cd ..
-git clone https://github.com/thisismalindu/mims-app-frontend.git
-cd mims-app-frontend
+## 4. Project Setup & First Run
 
-# Install frontend dependencies
-npm install
-```
+### Step 1: Create the Next.js Project
 
-### Project Structure
+1.  Open your terminal.
+2.  Navigate to the folder where you want to create your project (e.g., `Desktop` or `Documents`).
+3.  Run the following command to create a new Next.js app named `mims-app`:
 
-You will now have two separate folders:
-```
-mims-app-backend/               # Node.js/Express API
-├── node_modules/
-├── prisma/
-├── src/
-├── .env
-├── .gitignore
-├── package.json
-└── ... (other backend files)
-
-mims-app-frontend/              # React Application
-├── node_modules/
-├── public/
-├── src/
-├── index.html
-├── .gitignore
-├── package.json
-└── vite.config.js
-```
-
-### Git Setup
-
-Each repository has its own `.gitignore` file with appropriate rules.
-
-**Backend `.gitignore`:**
-```
-# Dependencies
-node_modules/
-
-# Environment variables
-.env
-
-# Database
-*.db
-*.sqlite
-
-# Logs
-*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-```
-
-**Frontend `.gitignore`:**
-```
-# Dependencies
-node_modules/
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Build output
-dist/
-build/
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-```
-
----
-
-## 3. Backend: Building the API
-
-**All commands are run from the `mims-app-backend` directory.**
-
-### Step 1: Install Dependencies
-```bash
-# Core framework and server
-npm install express
-npm install -D nodemon # Tool to auto-restart server on changes
-
-# Database ORM and connector
-npm install prisma
-npm install -D @prisma/client
-npx prisma init # This creates the prisma folder and schema
-
-# Authentication and security
-npm install bcryptjs jsonwebtoken
-
-# Other utilities
-npm install cors dotenv
-```
-
-### Step 2: Configure Prisma and Database
-1.  Open `prisma/schema.prisma`. This file defines your database structure.
-2.  **Define Your Data Model:** Replace the content with your tables. Here's a starter for the `Customer` and `Agent` models. You will add more (Account, Transaction, etc.) later.
-    ```prisma
-    // prisma/schema.prisma
-    generator client {
-      provider = "prisma-client-js"
-    }
-
-    datasource db {
-      provider = "postgresql"
-      url      = env("DATABASE_URL") // We'll set this in a .env file
-    }
-
-    model Branch {
-      id      Int      @id @default(autoincrement())
-      name    String
-      location String
-      agents  Agent[]
-      // Add other fields later
-      @@map("branches")
-    }
-
-    model Agent {
-      id        Int      @id @default(autoincrement())
-      name      String
-      branchId  Int
-      branch    Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
-      customers Customer[]
-
-      @@map("agents")
-    }
-
-    model Customer {
-      id        Int      @id @default(autoincrement())
-      name      String
-      nic       String   @unique // National Identity Card Number
-      phone     String?
-      assignedAgentId Int
-      agent     Agent    @relation(fields: [assignedAgentId], references: [id], onDelete: Cascade)
-      // We'll add 'accounts' relation later
-
-      @@map("customers")
-    }
-    ```
-3.  **Create a `.env` file** in the root backend directory:
     ```bash
-    # For Local PostgreSQL (if you installed it)
-    DATABASE_URL="postgresql://postgres:your_password@localhost:5432/mimsdb?schema=public"
-
-    # For Hosted PostgreSQL (on Railway - get this URL later)
-    # DATABASE_URL="postgresql://johndoe:abc123@@server.railway.com:5432/railway"
-
-    JWT_SECRET="your_super_secret_jwt_key_make_this_very_long_and_random"
+    npx create-next-app@latest mims-app
     ```
-    *Replace `your_password` with the password you set for PostgreSQL.*
 
-### Step 3: Create the Database and Tables
-```bash
-# This command reads your schema.prisma and creates SQL commands to create the tables.
-npx prisma migrate dev --name init
-
-# This generates the Prisma Client code, which we use to query the database.
-npx prisma generate
-```
-
-### Step 4: Build the Express Server
-1.  Create the main server file: `src/index.js`
-    ```javascript
-    // src/index.js
-    const express = require('express');
-    const cors = require('cors');
-    require('dotenv').config();
-
-    const app = express();
-    const PORT = process.env.PORT || 3001;
-
-    // Middleware
-    app.use(cors()); // Allows our React app to call this API
-    app.use(express.json()); // Lets us parse JSON from requests
-
-    // Basic health check route
-    app.get('/api/health', (req, res) => {
-      res.json({ message: 'MIMS Backend Server is running!' });
-    });
-
-    // TODO: Import and use routes here
-    // app.use('/api/customers', customerRoutes);
-
-    // Start the server
-    app.listen(PORT, () => {
-      console.log(`Server is listening on port ${PORT}`);
-    });
+4.  You will be asked some questions. Answer them as follows:
     ```
-2.  **Update `package.json` scripts** to run the server easily:
-    ```json
-    "scripts": {
-      "start": "node src/index.js",
-      "dev": "nodemon src/index.js"
-    }
+    Would you like to use TypeScript? ... No (*We'll use JavaScript for simplicity*)
+    Would you like to use ESLint? ... Yes
+    Would you like to use Tailwind CSS? ... Yes (*This is highly recommended*)
+    Would you like to use `src/` directory? ... Yes (*Keeps our code organized*)
+    Would you like to use App Router? ... Yes (*Uses the modern Next.js structure*)
+    Would you like to customize the default import alias? ... No
     ```
-3.  **Test the server:** Run `npm run dev`. Open your browser and go to `http://localhost:3001/api/health`. You should see the JSON message.
-
-### Step 5: Create Your First API Route
-1.  Create a folder: `src/routes`
-2.  Create a file: `src/routes/customerRoutes.js`
-    ```javascript
-    // src/routes/customerRoutes.js
-    const express = require('express');
-    const { PrismaClient } = require('@prisma/client');
-
-    const router = express.Router();
-    const prisma = new PrismaClient();
-
-    // GET /api/customers - Get all customers
-    router.get('/', async (req, res) => {
-      try {
-        const customers = await prisma.customer.findMany({
-          include: { agent: true }, // Include agent data in the response
-        });
-        res.json(customers);
-      } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch customers' });
-      }
-    });
-
-    // POST /api/customers - Create a new customer
-    router.post('/', async (req, res) => {
-      const { name, nic, phone, assignedAgentId } = req.body;
-      try {
-        const newCustomer = await prisma.customer.create({
-          data: { name, nic, phone, assignedAgentId },
-        });
-        res.status(201).json(newCustomer);
-      } catch (error) {
-        res.status(400).json({ error: 'Failed to create customer' });
-      }
-    });
-
-    module.exports = router;
-    ```
-3.  **Import the route in `index.js`:**
-    ```javascript
-    // Add near the top of index.js
-    const customerRoutes = require('./routes/customerRoutes');
-
-    // Add this line where the TODO comment was
-    app.use('/api/customers', customerRoutes);
-    ```
-4.  **Test the API:** Use a tool like **Thunder Client (VSCode extension)** or **Postman** to send a `POST` request to `http://localhost:3001/api/customers` with a JSON body:
-    ```json
-    {
-      "name": "John Doe",
-      "nic": "199712345678",
-      "phone": "0771234567",
-      "assignedAgentId": 1
-    }
-    ```
-    Then send a `GET` request to the same URL to see your created customer.
-
-**Next Steps for Backend:** Repeat this process for other routes: `agentRoutes.js`, `accountRoutes.js`, `transactionRoutes.js`. Implement all the business logic (e.g., in `transactionRoutes.js`, check balance before allowing a withdrawal).
-
----
-
-## 4. Frontend: Building the UI
-
-**All commands are run from the `mims-app-frontend` directory.**
-
-### Step 1: Install Additional Dependencies
-```bash
-# For making API calls to our backend
-npm install axios
-
-# For routing between different pages (e.g., Login, Dashboard, Customer List)
-npm install react-router-dom
-```
-
-### Step 2: Clean Up and Structure
-1.  Remove unnecessary files: `src/App.css`, `src/index.css`. You can keep them if you want, but we'll use Tailwind.
-2.  **Install and Configure Tailwind CSS (Optional but Recommended):**
+5.  Navigate into your new project folder and open it in VSCode:
     ```bash
-    npm install -D tailwindcss postcss autoprefixer
-    npx tailwindcss init -p
+    cd mims-app
+    code .
     ```
-    Configure `tailwind.config.js`:
-    ```js
-    /** @type {import('tailwindcss').Config} */
-    export default {
-      content: [
-        "./index.html",
-        "./src/**/*.{js,ts,jsx,tsx}",
-      ],
-      theme: {
-        extend: {},
+
+### Step 2: Explore the Project Structure
+
+Your project folder will look like this:
+```
+mims-app/
+├── src/
+│   ├── app/          # This is where our main pages and layouts live
+│   │   ├── globals.css
+│   │   ├── layout.js  # Root layout for the entire app
+│   │   └── page.js    # The home page (localhost:3000)
+│   └── ...
+├── public/           # Static files like images
+├── next.config.js    # Configuration file for Next.js
+├── package.json      # Lists our project's dependencies and scripts
+└── tailwind.config.js # Configuration for Tailwind CSS
+```
+
+### Step 3: Run the Development Server
+
+1.  In your terminal, make sure you are in the `mims-app` directory.
+2.  Run the following command:
+    ```bash
+    npm run dev
+    ```
+3.  Open your browser and go to `http://localhost:3000`.
+4.  You should see the default Next.js welcome page. Congratulations! Your development server is running.
+
+**Keep this terminal window open.** This server will automatically update your browser whenever you save changes to your code.
+
+## 5. Database Design & Setup
+
+### Part A: Design the Database Tables
+
+Based on the project requirements, we need tables for `branches`, `agents`, `customers`, `accounts`, `transactions`, and `fixed_deposits`.
+
+We will write SQL commands to create these tables. Create a new file in your project called `database-schema.sql`. This file is just for planning; we will run these commands later.
+
+**File: `database-schema.sql`**
+```sql
+-- Create a database named 'mimsdb' (we will do this on the hosting platform)
+-- CREATE DATABASE mimsdb;
+
+-- Table for branches
+CREATE TABLE branches (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table for agents
+CREATE TABLE agents (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL, -- We will store hashed passwords, never plain text!
+    branch_id INTEGER REFERENCES branches(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table for customers
+CREATE TABLE customers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    nic VARCHAR(20) UNIQUE NOT NULL, -- National Identity Card number
+    phone VARCHAR(15),
+    assigned_agent_id INTEGER REFERENCES agents(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table for account types (e.g., Children, Teen, Adult, etc.)
+CREATE TABLE account_types (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL, -- e.g., 'Children', 'Teen'
+    interest_rate DECIMAL(5, 2) NOT NULL, -- e.g., 12.00
+    min_balance DECIMAL(15, 2) NOT NULL -- e.g., 0.00
+);
+
+-- Table for savings accounts
+CREATE TABLE accounts (
+    id SERIAL PRIMARY KEY,
+    account_number VARCHAR(20) UNIQUE NOT NULL, -- Should be generated automatically
+    current_balance DECIMAL(15, 2) DEFAULT 0.00,
+    customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
+    account_type_id INTEGER REFERENCES account_types(id) ON DELETE CASCADE,
+    is_joint BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table for all transactions (deposits, withdrawals, interest)
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    amount DECIMAL(15, 2) NOT NULL,
+    transaction_type VARCHAR(10) NOT NULL, -- 'deposit', 'withdrawal', 'interest'
+    reference_number VARCHAR(100),
+    account_id INTEGER REFERENCES accounts(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table for fixed deposits (FDs)
+CREATE TABLE fixed_deposits (
+    id SERIAL PRIMARY KEY,
+    account_id INTEGER REFERENCES accounts(id) ON DELETE CASCADE,
+    amount DECIMAL(15, 2) NOT NULL,
+    tenure_months INTEGER NOT NULL, -- 6, 12, 36
+    interest_rate DECIMAL(5, 2) NOT NULL,
+    start_date DATE NOT NULL,
+    next_interest_date DATE NOT NULL, -- Calculated: start_date + 30 days
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Part B: Set Up a Cloud Database
+
+We will use **Neon** (https://neon.tech) for a free, cloud-hosted PostgreSQL database.
+
+1.  Go to [Neon.tech](https://neon.tech) and sign up for a free account.
+2.  Click "Create a project".
+3.  Name your project `mims-database`.
+4.  Neon will create a new database for you. On the dashboard, find the **Connection String**. It should look like this:
+    `postgresql://username:password@ep-cool-water-123456.us-east-2.aws.neon.tech/database-name?sslmode=require`
+5.  Copy this connection string. We will need it soon.
+
+### Part C: Connect Next.js to the Database
+
+1.  In your project, install the PostgreSQL library for Node.js:
+    ```bash
+    npm install pg
+    ```
+2.  Create a folder `src/lib` and inside it, create a file `database.js`. This file will handle the connection to our database.
+
+    **File: `src/lib/database.js`**
+    ```javascript
+    import { Pool } from 'pg';
+
+    // Create a new Pool instance. A Pool manages multiple database connections.
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL, // We will set this environment variable next
+      ssl: {
+        rejectUnauthorized: false, // Often required for cloud databases like Neon
       },
-      plugins: [],
-    }
-    ```
-    Replace the content of `src/index.css` with:
-    ```css
-    @tailwind base;
-    @tailwind components;
-    @tailwind utilities;
-    ```
-
-### Step 3: Create Components and Pages
-Create a logical structure inside `src/`:
-```
-src/
-├── components/     # Reusable pieces (Navbar, CustomerCard)
-├── pages/         # Full pages (Dashboard, CustomersPage)
-├── services/      # Code for API calls (api.js)
-├── App.jsx
-└── main.jsx
-```
-
-1.  **Create an API service:** `src/services/api.js`
-    ```javascript
-    // src/services/api.js
-    import axios from 'axios';
-
-    // Create an axios instance pointing to our backend URL
-    // In development, it's localhost. After deployment, we'll change this.
-    const API = axios.create({
-      baseURL: 'http://localhost:3001/api', // Your backend URL
     });
 
-    export default API;
+    // Export a helper function to query the database
+    export async function query(text, params) {
+      try {
+        const client = await pool.connect();
+        const result = await client.query(text, params);
+        client.release(); // Release the client back to the pool
+        return result;
+      } catch (err) {
+        console.error('Database query error', err);
+        throw err; // Re-throw the error so the API route can handle it
+      }
+    }
+
+    export default pool;
     ```
 
-2.  **Create a Page:** `src/pages/CustomersPage.jsx`
-    ```jsx
-    // src/pages/CustomersPage.jsx
-    import { useState, useEffect } from 'react';
-    import API from '../services/api';
+3.  **Environment Variables:** We need to store our sensitive database connection string securely.
+    - In the root of your project, create a file called `.env.local`.
+    - Add the following line to it, pasting your Neon connection string:
+      ```
+      DATABASE_URL="your_neon_connection_string_here"
+      ```
+    - **CRUCIAL:** Add `.env.local` to your `.gitignore` file. This prevents you from accidentally committing your password to GitHub.
 
-    function CustomersPage() {
-      const [customers, setCustomers] = useState([]);
+4.  **Create the Tables:** Let's create a simple API route to run our SQL schema. This is a one-time setup task.
+    - Create a file `src/app/api/setup-database/route.js`.
+    - **Important:** In Next.js App Router, API routes are defined in `app/api/route.js`. The folder name (`setup-database`) becomes the API endpoint (`/api/setup-database`).
 
-      useEffect(() => {
-        // Fetch customers from the backend when the component loads
-        const fetchCustomers = async () => {
-          try {
-            const response = await API.get('/customers');
-            setCustomers(response.data);
-          } catch (error) {
-            console.error('Error fetching customers:', error);
-          }
-        };
-        fetchCustomers();
-      }, []);
+    **File: `src/app/api/setup-database/route.js`**
+    ```javascript
+    import { query } from '@/lib/database'; // We'll use our helper function
 
-      return (
-        <div className="p-4">
-          <h1 className="text-2xl font-bold mb-4">Customers</h1>
-          <ul>
-            {customers.map((customer) => (
-              <li key={customer.id} className="border p-2 my-2">
-                {customer.name} - {customer.nic}
-              </li>
-            ))}
-          </ul>
-        </div>
+    export async function GET() {
+      try {
+        // Run the SQL commands from our database-schema.sql file
+        await query(`
+          CREATE TABLE IF NOT EXISTS branches (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, location VARCHAR(255) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+          -- ... Paste the rest of your CREATE TABLE statements here ...
+          CREATE TABLE IF NOT EXISTS fixed_deposits (id SERIAL PRIMARY KEY, account_id INTEGER REFERENCES accounts(id) ON DELETE CASCADE, amount DECIMAL(15, 2) NOT NULL, tenure_months INTEGER NOT NULL, interest_rate DECIMAL(5, 2) NOT NULL, start_date DATE NOT NULL, next_interest_date DATE NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+        `);
+        return Response.json({ message: 'Database tables created successfully!' });
+      } catch (error) {
+        return Response.json({ error: error.message }, { status: 500 });
+      }
+    }
+    ```
+5.  **Run the Setup:**
+    - Make sure your dev server is running (`npm run dev`).
+    - Open your browser and go to `http://localhost:3000/api/setup-database`.
+    - You should see a JSON message: `{"message":"Database tables created successfully!"}`.
+    - **Note:** You can delete this API route after running it once, or keep it for future resets.
+
+## 6. Building the Backend (API Routes)
+
+The backend is built using **API Routes**. Each file in `src/app/api/` becomes an endpoint. For example, `src/app/api/customers/route.js` is accessible at `http://localhost:3000/api/customers`.
+
+We will use HTTP methods:
+- `GET` to retrieve data.
+- `POST` to create new data.
+- `PUT` to update data.
+- `DELETE` to delete data.
+
+### Example: Customers API
+
+Let's create an API to get all customers and add a new customer.
+
+1.  Create the file: `src/app/api/customers/route.js`.
+
+2.  Implement the `GET` and `POST` methods:
+
+**File: `src/app/api/customers/route.js`**
+```javascript
+import { query } from '@/lib/database';
+import { NextResponse } from 'next/server';
+
+// Handle GET requests to /api/customers
+export async function GET() {
+  try {
+    // SQL query to get all customers and their agent's name
+    const result = await query(`
+      SELECT c.*, a.name AS agent_name 
+      FROM customers c 
+      INNER JOIN agents a ON c.assigned_agent_id = a.id
+    `);
+    return NextResponse.json(result.rows);
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+// Handle POST requests to /api/customers
+export async function POST(request) {
+  try {
+    // Get the data sent from the frontend
+    const { name, nic, phone, assignedAgentId } = await request.json();
+
+    // Validate the data (simple check)
+    if (!name || !nic || !assignedAgentId) {
+      return NextResponse.json(
+        { error: 'Name, NIC, and assigned agent are required.' },
+        { status: 400 }
       );
     }
-    export default CustomersPage;
-    ```
 
-3.  **Set Up Routing:** Modify `src/App.jsx`
-    ```jsx
-    // src/App.jsx
-    import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-    import CustomersPage from './pages/CustomersPage';
+    // Insert the new customer into the database
+    const result = await query(
+      'INSERT INTO customers (name, nic, phone, assigned_agent_id) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name, nic, phone, assignedAgentId]
+    );
 
-    function App() {
-      return (
-        <Router>
-          <div>
-            <nav className="bg-blue-600 p-4 text-white">
-              <Link to="/" className="mr-4">Dashboard</Link>
-              <Link to="/customers">Customers</Link>
-            </nav>
-            <Routes>
-              <Route path="/" element={<h1 className="p-4">Dashboard</h1>} />
-              <Route path="/customers" element={<CustomersPage />} />
-            </Routes>
+    // Return the newly created customer
+    return NextResponse.json(result.rows[0], { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+```
+
+**Test your API:**
+You can test this using a tool like **Thunder Client** (a VSCode extension) or **Postman**.
+- **GET Test:** Send a `GET` request to `http://localhost:3000/api/customers`.
+- **POST Test:** Send a `POST` request to the same URL with a JSON body:
+  ```json
+  {
+    "name": "Sanduni Perera",
+    "nic": "199712345678",
+    "phone": "0771234567",
+    "assignedAgentId": 1
+  }
+  ```
+
+**Repeat this process** for all your other entities: `agents`, `accounts`, `transactions`, `fixed_deposits`. Create files like:
+- `src/app/api/agents/route.js`
+- `src/app/api/accounts/route.js`
+- `src/app/api/accounts/[id]/transactions/route.js` (for transactions of a specific account)
+
+## 7. Building the Frontend (Pages & Components)
+
+The frontend is built using **React Components** in the `src/app/` directory. Each `.js` file here becomes a page. `page.js` is the home page (`/`), `customers/page.js` is the customers page (`/customers`).
+
+### Step 1: Create a Layout with Navigation
+
+First, let's modify the root layout to include a navigation bar.
+
+**File: `src/app/layout.js`**
+```jsx
+import { Inter } from 'next/font/google';
+import './globals.css';
+import Link from 'next/link';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata = {
+  title: 'MIMS - Microbanking System',
+  description: 'Manage microbanking operations',
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        {/* Navigation Bar */}
+        <nav className="bg-blue-600 p-4 text-white">
+          <div className="container mx-auto flex justify-between items-center">
+            <Link href="/" className="text-xl font-bold">MIMS</Link>
+            <div className="space-x-4">
+              <Link href="/" className="hover:underline">Dashboard</Link>
+              <Link href="/customers" className="hover:underline">Customers</Link>
+              <Link href="/agents" className="hover:underline">Agents</Link>
+              <Link href="/transactions" className="hover:underline">Transactions</Link>
+            </div>
           </div>
-        </Router>
-      );
-    }
-    export default App;
-    ```
+        </nav>
 
-4.  **Test the Frontend:** Run `npm run dev`. Go to `http://localhost:5173` and click on "Customers". You should see the customer you created via the API!
+        {/* Main Content */}
+        <main className="container mx-auto p-4">
+          {children}
+        </main>
+      </body>
+    </html>
+  );
+}
+```
 
----
+### Step 2: Create the Customers Page
 
-## 5. Connecting Frontend to Backend
+Now, let's create a page to display and add customers. We will use **React Server Components** to fetch data directly on the server.
 
-This is already done in the previous step! The key is the `baseURL` in `src/services/api.js`. The frontend runs on `http://localhost:5173` and the backend on `http://localhost:3001`. The `cors()` middleware in the backend allows this cross-origin request.
+**File: `src/app/customers/page.js`**
+```jsx
+import Link from 'next/link';
 
-**Important:** Before deployment, you will need to change the `baseURL` to point to your live backend URL (e.g., `https://mims-backend.railway.app/api`).
+// This function runs on the SERVER before the page is sent to the user.
+async function getCustomers() {
+  // This is a server-side fetch to our own API route. It's fast and secure.
+  const res = await fetch('http://localhost:3000/api/customers', {
+    cache: 'no-store', // Don't cache, always get the latest data
+  });
 
----
+  if (!res.ok) {
+    throw new Error('Failed to fetch customers');
+  }
+  return res.json();
+}
 
-## 6. Deployment (Hosting)
+export default async function CustomersPage() {
+  // This await happens on the server. The user sees nothing until it's done.
+  const customers = await getCustomers();
 
-### Part A: Deploy Database & Backend to Railway
-1.  Make sure your backend code is pushed to `https://github.com/thisismalindu/mims-app-backend`.
-2.  **On Railway:**
-    *   Create a new Project.
-    *   Click "New" and choose "PostgreSQL". This creates your database. Go to the "Variables" tab and copy the `DATABASE_URL`.
-    *   Now, connect your `mims-app-backend` GitHub repo to Railway.
-    *   In the Railway project settings, add a variable: `JWT_SECRET` with a long random string.
-    *   Also add the `DATABASE_URL` variable with the connection string from the PostgreSQL service you just created.
-    *   Railway will automatically detect it's a Node.js app and run `npm install` and `npm start`. Your backend is now live! Railway will give you a URL like `https://mims-backend.up.railway.app`.
+  return (
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Customers</h1>
+      <Link href="/customers/new" className="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block">
+        Add New Customer
+      </Link>
+      <table className="min-w-full table-auto">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="px-4 py-2">ID</th>
+            <th className="px-4 py-2">Name</th>
+            <th className="px-4 py-2">NIC</th>
+            <th className="px-4 py-2">Phone</th>
+            <th className="px-4 py-2">Assigned Agent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {customers.map((customer) => (
+            <tr key={customer.id} className="border-b">
+              <td className="px-4 py-2">{customer.id}</td>
+              <td className="px-4 py-2">{customer.name}</td>
+              <td className="px-4 py-2">{customer.nic}</td>
+              <td className="px-4 py-2">{customer.phone}</td>
+              <td className="px-4 py-2">{customer.agent_name}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+```
 
-### Part B: Deploy Frontend to Vercel
-1.  Make sure your frontend code is pushed to `https://github.com/thisismalindu/mims-app-frontend`.
-2.  **On Vercel:** Click "Add New..." -> "Project".
-3.  Import your `mims-app-frontend` GitHub repository.
-4.  In the "Build and Output Settings":
-    *   **Framework Preset:** Vite
-5.  **Crucial Step:** Add an **Environment Variable** for the build process.
-    *   **Name:** `VITE_API_BASE_URL`
-    *   **Value:** The URL of your live backend on Railway (e.g., `https://mims-backend.up.railway.app/api`)
-6.  Click "Deploy". Your frontend is now live!
-7.  **Update your frontend code:** In `src/services/api.js`, change the `baseURL` to use the environment variable:
-    ```javascript
-    const API = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL, // This will now use the variable from Vercel
+### Step 3: Create a Form to Add a Customer
+
+We need a form for adding new customers. We'll use a **Client Component** because we need user interaction (typing, submitting a form).
+
+1.  Create a new folder: `src/app/customers/new`.
+2.  Inside it, create a file `page.js`.
+
+**File: `src/app/customers/new/page.js`**
+```jsx
+'use client'; // This directive marks this component as a Client Component
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function NewCustomerPage() {
+  const [name, setName] = useState('');
+  const [nic, setNic] = useState('');
+  const [phone, setPhone] = useState('');
+  const [assignedAgentId, setAssignedAgentId] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // Send a POST request to our API route
+    const response = await fetch('/api/customers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, nic, phone, assignedAgentId: parseInt(assignedAgentId) }),
     });
+
+    if (response.ok) {
+      router.push('/customers'); // Navigate back to the customers list
+      router.refresh(); // Refresh the server data for the customers list page
+    } else {
+      setIsLoading(false);
+      // Handle error (e.g., show an error message)
+      const errorData = await response.json();
+      alert(`Error: ${errorData.error}`);
+    }
+  };
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Add New Customer</h1>
+      <form onSubmit={handleSubmit} className="max-w-md">
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-gray-700">Name</label>
+          <input
+            type="text"
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="w-full p-2 border border-gray-300 rounded"
+          />
+        </div>
+        {/* Add similar fields for NIC, Phone, and Assigned Agent ID */}
+        <div className="mb-4">
+          <label htmlFor="nic" className="block text-gray-700">NIC</label>
+          <input
+            type="text"
+            id="nic"
+            value={nic}
+            onChange={(e) => setNic(e.target.value)}
+            required
+            className="w-full p-2 border border-gray-300 rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="phone" className="block text-gray-700">Phone</label>
+          <input
+            type="tel"
+            id="phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="agentId" className="block text-gray-700">Assigned Agent ID</label>
+          <input
+            type="number"
+            id="agentId"
+            value={assignedAgentId}
+            onChange={(e) => setAssignedAgentId(e.target.value)}
+            required
+            className="w-full p-2 border border-gray-300 rounded"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-blue-300"
+        >
+          {isLoading ? 'Adding...' : 'Add Customer'}
+        </button>
+      </form>
+    </div>
+  );
+}
+```
+
+## 8. Connecting the Frontend to the Backend
+
+You've already done it! The connection happens in two ways:
+
+1.  **Server Components:** Using `fetch` inside `src/app/customers/page.js` to get data on the server.
+2.  **Client Components:** Using `fetch` inside a event handler (like `handleSubmit`) to send data from the browser to the API route.
+
+The key is the URL used in the `fetch` call:
+- `fetch('/api/customers')` - This works because our frontend and backend are hosted on the same domain. Next.js routes the request to the correct API route.
+
+## 9. Authentication & Security
+
+This is a crucial part. We must ensure only authorized users can access the system.
+
+### Step 1: Hash Passwords
+
+Never store plain text passwords. We will use the `bcrypt` library to hash them.
+
+1.  Install `bcrypt`:
+    ```bash
+    npm install bcrypt
     ```
-    Push this change to GitHub. Vercel will automatically redeploy.
+2.  When creating an agent, hash their password before storing it:
 
----
+**Example in `src/app/api/agents/route.js` (POST handler):**
+```javascript
+import bcrypt from 'bcrypt';
+// ...
+const { name, email, password, branch_id } = await request.json();
+const passwordHash = await bcrypt.hash(password, 10); // 10 is the "salt rounds"
 
-## 7. Development Workflow
-
-Since we have two separate repositories, you'll need to work on them independently.
-
-### Working on the Backend:
-```bash
-# Navigate to the backend directory
-cd mims-app-backend
-
-# Pull the latest changes
-git pull origin main
-
-# Create a feature branch
-git checkout -b feature/add-new-endpoint
-
-# Make your changes and test locally
-npm run dev
-
-# Commit and push your changes
-git add .
-git commit -m "feat: add new API endpoint for reports"
-git push origin feature/add-new-endpoint
+await query(
+  'INSERT INTO agents (name, email, password_hash, branch_id) VALUES ($1, $2, $3, $4)',
+  [name, email, passwordHash, branch_id]
+);
+// ...
 ```
 
-### Working on the Frontend:
-```bash
-# Navigate to the frontend directory
-cd mims-app-frontend
+### Step 2: Create Login API and Use JWT
 
-# Pull the latest changes
-git pull origin main
+1.  Install `jsonwebtoken`:
+    ```bash
+    npm install jsonwebtoken
+    ```
+2.  Create a secret key for JWT in your `.env.local` file:
+    ```
+    JWT_SECRET="your_super_secret_key_here_make_it_very_long"
+    ```
+3.  Create a login API route: `src/app/api/auth/login/route.js`
 
-# Create a feature branch
-git checkout -b feature/add-report-page
+**File: `src/app/api/auth/login/route.js`**
+```javascript
+import { query } from '@/lib/database';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
 
-# Make your changes and test locally
-npm run dev
+export async function POST(request) {
+  const { email, password } = await request.json();
 
-# Commit and push your changes
-git add .
-git commit -m "feat: add report page UI"
-git push origin feature/add-report-page
+  // 1. Find the agent by email
+  const result = await query('SELECT * FROM agents WHERE email = $1', [email]);
+  const agent = result.rows[0];
+
+  if (!agent) {
+    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+  }
+
+  // 2. Compare the provided password with the stored hash
+  const isPasswordValid = await bcrypt.compare(password, agent.password_hash);
+  if (!isPasswordValid) {
+    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+  }
+
+  // 3. Create a JWT token
+  const token = jwt.sign(
+    { agentId: agent.id, email: agent.email }, // Payload (data to store in token)
+    process.env.JWT_SECRET, // Secret key
+    { expiresIn: '1h' } // Token expires in 1 hour
+  );
+
+  // 4. Return the token to the frontend
+  const response = NextResponse.json({ message: 'Login successful' });
+  // Set the token as an HTTP-only cookie (more secure than local storage)
+  response.cookies.set('auth_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Secure in production (HTTPS)
+    sameSite: 'strict',
+    maxAge: 60 * 60, // 1 hour in seconds
+  });
+
+  return response;
+}
 ```
 
-### Creating Pull Requests:
-1.  Go to your GitHub repository.
-2.  Navigate to the "Pull requests" tab.
-3.  Click "New pull request".
-4.  Select your feature branch to merge into main.
-5.  Add a description and assign a reviewer.
-6.  Once approved, merge the pull request.
+### Step 3: Protect API Routes
 
-This will trigger automatic deployment on Railway (for backend) and Vercel (for frontend).
+Create a middleware to check for a valid JWT on protected routes.
 
----
+1.  Create a file `src/middleware.js`:
 
-## 8. FAQ & Troubleshooting
+**File: `src/middleware.js`**
+```javascript
+import { NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 
-**Q: I get a `CORS` error in the browser when my frontend tries to talk to the backend.**
-**A:** Double-check you have `app.use(cors());` in your backend `index.js` file.
+export function middleware(request) {
+  // Get the token from the cookie
+  const token = request.cookies.get('auth_token')?.value;
 
-**Q: I get a `prisma` command not found error.**
-**A:** You installed Prisma locally in the project. Always use `npx prisma ...` instead of just `prisma ...`.
+  // Define paths that require authentication
+  const protectedPaths = ['/api/agents', '/api/customers', '/api/accounts']; // Add your protected API routes
+  const isProtectedApiRoute = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path));
 
-**Q: My changes in the frontend/backend aren't showing up.**
-**A:** 1) Did you save the file? 2) Is your dev server still running? 3) For backend changes, did `nodemon` restart? 4) Hard refresh your browser (Ctrl+F5).
+  if (isProtectedApiRoute) {
+    if (!token) {
+      return NextResponse.json({ error: 'Access denied. No token provided.' }, { status: 401 });
+    }
+
+    try {
+      // Verify the token
+      jwt.verify(token, process.env.JWT_SECRET);
+      // If valid, let the request continue
+      return NextResponse.next();
+    } catch (error) {
+      return NextResponse.json({ error: 'Invalid token.' }, { status: 401 });
+    }
+  }
+
+  // For all other requests, just continue
+  return NextResponse.next();
+}
+
+// Specify which paths this middleware should run on
+export const config = {
+  matcher: ['/api/:path*'], // Run on all API routes
+};
+```
+
+Now, any request to `/api/customers`, `/api/agents`, etc., will require a valid JWT cookie, which is only set after a successful login.
+
+## 10. Deployment to Vercel
+
+This is the easiest part!
+
+1.  **Push your code to GitHub:**
+    - Create a new repository on GitHub.
+    - Follow the instructions to push your local code to it.
+    - **Make sure your `.env.local` file is in `.gitignore`!**
+
+2.  **Deploy on Vercel:**
+    - Go to [vercel.com](https://vercel.com) and sign up with your GitHub account.
+    - Click "Add New..." -> "Project".
+    - Import your GitHub repository.
+    - Vercel will automatically detect it's a Next.js app.
+
+3.  **Add Environment Variables:**
+    - In your Vercel project dashboard, go to "Settings" -> "Environment Variables".
+    - Add your `DATABASE_URL` and `JWT_SECRET` here, with the same values you had in your `.env.local` file.
+    - Click "Deploy". Vercel will build and deploy your application.
+
+4.  **You're Live!** Vercel will give you a URL (e.g., `https://mims-app.vercel.app`). Your full-stack application is now on the internet!
+
+## 11. Development Workflow
+
+1.  **Plan:** Discuss with your team what feature to build next (e.g., "Interest Calculation").
+2.  **Code:**
+    - `git pull origin main` to get the latest code.
+    - `git checkout -b feature/interest-calculation` to create a new branch for your feature.
+    - Write your code. Start the dev server with `npm run dev` and test locally.
+3.  **Test:** Test your feature thoroughly.
+4.  **Commit and Push:**
+    ```bash
+    git add .
+    git commit -m "feat: add monthly interest calculation API"
+    git push origin feature/interest-calculation
+    ```
+5.  **Pull Request (PR):** On GitHub, create a PR from your feature branch to the `main` branch. Another team member should review your code.
+6.  **Merge and Deploy:** Once approved, merge the PR into `main`. This will automatically trigger a new deployment on Vercel.
+
+## 12. FAQ & Troubleshooting
+
+**Q: I get an error `Module not found: Can't resolve 'pg'` or `bcrypt`.**
+**A:** You probably installed the package but are getting this error in the browser. Remember, `pg` and `bcrypt` are server-side libraries. They will cause errors if you import them into a Client Component. Only use them in API Routes or Server Components.
+
+**Q: My API route returns a 404 error.**
+**A:** Check the file path. API routes must be in `src/app/api/your-route/route.js`. The folder name must be `api`.
 
 **Q: How do I see my database data?**
-**A:** Run `npx prisma studio` in your backend folder. It opens a browser window to view and edit your database tables.
+**A:** You can use the SQL Shell in your Neon dashboard, or use a tool like DBeaver or VSCode's PostgreSQL extension to connect to your Neon database using the connection string.
 
-**Q: Deployment failed on Railway/Vercel.**
-**A:** Check the build logs on their websites. The error is almost always there. Common issues:
-*   Missing environment variables (`DATABASE_URL`, `JWT_SECRET`).
-*   A syntax error in your code.
+**Q: I get a "Failed to fetch" error on the frontend.**
+**A:** Check if your backend API is working. Test the API route directly in the browser or Thunder Client. The URL in your `fetch` call might be wrong.
 
-**Q: Why are we using two separate GitHub repos?**
-**A:** It simplifies deployment. Vercel is designed to deploy a single React app, and Railway is designed to deploy a single Node.js app. Managing them separately is much easier for this project structure. It also allows for independent version control and deployment of frontend and backend components.
+**Q: How do I handle images or file uploads?**
+**A:** For this project, you likely won't need it. But if you do, you would store the files in a service like AWS S3 or Vercel Blob and only store the file URL in your database.
 
-**Q: How do I handle environment variables in development vs production?**
-**A:** 
-- For backend: Use a `.env` file for local development. Railway will use the environment variables you set in its dashboard for production.
-- For frontend: Use `import.meta.env.VITE_API_BASE_URL` in your code. For local development, create a `.env` file with `VITE_API_BASE_URL=http://localhost:3001/api`. For production, set the variable in Vercel's dashboard.
-
-**Q: How do I collaborate with team members on both repositories?**
-**A:** 
-1. Ensure all team members have access to both GitHub repositories.
-2. Follow the branching strategy outlined in section 7.
-3. Communicate clearly about which API endpoints are available when making frontend changes.
-4. Regularly pull changes from both repositories to stay up-to-date.
+---
+**This guide provides a solid foundation.** As you build, you will encounter specific challenges. Use the official Next.js documentation (https://nextjs.org/docs) and don't hesitate to search for solutions online. Good luck with your project
